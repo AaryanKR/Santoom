@@ -1,0 +1,68 @@
+.meetVideoContainer {
+    position: relative;
+    height: 100vh;
+    width: 100vw; /* ADDED: Forces the dark blue background to fill the screen */
+    background: rgb(1, 4, 48);
+    overflow: hidden; /* ADDED: Prevents unwanted scrollbars if videos overflow */
+}
+
+.meetUserVideo {
+    position: absolute;
+    bottom: 10vh;
+    height: 40vh;
+    width: auto;
+    left: 20px; /* CHANGED: Added 20px so it doesn't touch the extreme left edge of the screen */  
+    border-radius: 20px;
+    z-index: 10; /* ADDED: Ensures your local video stays on top of remote videos */
+}
+
+.buttonContainers {
+    position: absolute;
+    width: 100%; /* CHANGED: Using 100% instead of 100vw prevents horizontal scrollbars */
+    bottom: 30px; /* CHANGED: Lifted from 0 so the buttons aren't flush against the very bottom */
+    text-align: center;
+    z-index: 10; /* ADDED: Ensures buttons stay clickable and visible above video streams */
+}
+
+
+.buttonContainers svg {
+    font-size: 35px;
+}
+
+.conferenceView {
+    display: flex;
+    padding: 20px;
+    gap: 10px;
+    width: 100%; /* ADDED: Makes the remote video area take up the full screen */
+    height: 100%; /* ADDED: Makes the remote video area take up the full screen */
+    
+}
+
+.conferenceView video {
+    width: 25vw;
+    height: auto; /* CHANGED: Auto height prevents the remote video from stretching weirdly */
+    min-width: 20vw;
+    border-radius: 16px;
+    object-fit: cover; /* ADDED: Ensures the video fills its box nicely */
+}
+
+.chatRoom {
+    position: absolute;
+    height: 90vh;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    width: 30vw;
+    bottom: 10vh;
+    padding-inline: 20px;
+}
+
+.chatContainer {
+    position: relative;
+    height: 100%;
+}
+
+.chattingArea {
+    position: absolute;
+    bottom: 0;
+}

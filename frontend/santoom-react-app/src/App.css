@@ -1,0 +1,160 @@
+.landingPageContainer{
+  width: 100vw;
+  height: 100vh;
+  background: url("/background.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: white;
+}
+
+.landingPageContainer nav{
+  padding-inline : 1.2rem;
+  padding-block: 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.landingPageContainer nav h2{
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.landingPageContainer nav .navList{
+  display: flex;
+  gap: 1.6rem;
+  cursor: pointer;
+  opacity: 0.9;
+  margin-right: 1rem;
+}
+
+.landingPageContainer nav .navList:hover{
+  opacity: 1.5;
+}
+
+.navHeader{
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo{
+  height: 2.8rem;
+  width: auto;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.landingMainContainer{
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 3rem;
+  height: 70vh;
+  align-items: center;
+}
+
+.landingMainContainer > div:nth-child(1){
+  font-size: 1.2rem;
+}
+
+.landingMainContainer > div:nth-child(1) div[role = 'button']{
+  background: #D97500;
+  width: fit-content;
+  padding: 0.7rem;
+  border-radius: 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.landingMainContainer > div:nth-child(1) div[role = 'button'] a{
+  text-decoration: none;
+  color: white;
+  font-size: 1.5rem;
+  
+}
+
+.landingMainContainer > div:nth-child(2) img{
+  height: 70vh;
+  width: auto;
+}
+
+/* footer */
+
+.footer{
+  height: 6rem;
+  background-color: rgb(5, 0, 18);
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  width: 100vw;
+}
+
+.authorify , .certify{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: white;
+}
+
+.authorify{
+  margin-bottom: 0.5rem;
+}
+
+.navBar {
+  display: flex;
+  justify-content: space-between; /* Pushes the left and right sides apart */
+  align-items: center;
+  width: 100vw; /* FORCES the navbar to be exactly the width of your screen */
+  padding: 20px 20px; /* Adds responsive spacing on the left and right */
+  box-sizing: border-box;  
+  /* Use absolute positioning to lock it to the top left of the screen */
+  position: absolute; 
+  top: 0;
+  left: 0;
+  background-color: rgb(5, 0, 18);
+}
+
+.subNavbar {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* A much cleaner way to add space between the History and Logout buttons */
+}
+
+.meetContainer {
+  display: flex;
+  padding-inline: 20px;
+  height: 80vh;
+  gap: 10vw;
+  justify-content: center;
+}
+
+.leftPanel {
+  height: 100%;
+  display: flex;
+  align-items: center;
+
+}
+
+.rightPanel {
+  display: flex;
+  align-items: center;
+}
+
+.rightPanel > img {
+  width: 30vw;
+  height: auto;
+  border-radius: 20px;
+}
+
+.histSty{
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Snaps content to top */
+  align-items: flex-start;    /* Snaps content to left */
+  padding: 10px;
+  overflow: hidden;
+}
