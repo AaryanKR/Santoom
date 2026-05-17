@@ -35,7 +35,8 @@ export default function VideoMeetComponent() {
   let [video , setVideo] = useState([]);
   let [audio , setAudio] = useState();
   let [screen , setScreen] = useState();
-  let [showModel , setShowModel] = useState(true);
+  // Opens chat by default ONLY if the screen is wider than 900px (PC)
+  let [showModel , setShowModel] = useState(window.innerWidth > 900);
   let [screenAvailable , setScreenAvailable] = useState();
   let [messages , setMessages] = useState([]);
   let [message , setMessage] = useState("");
