@@ -12,6 +12,7 @@ import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import ChatIcon from '@mui/icons-material/Chat'
 import { useNavigate } from 'react-router-dom';
 import server from '../environment';
+import CloseIcon from '@mui/icons-material/Close';
 
 const server_url = server;
 
@@ -407,7 +408,6 @@ export default function VideoMeetComponent() {
     <div>
       {askForUsername === true ? 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f0f4f8' }}>
-          {/* ... (rest of your UI code is identical) ... */}
           <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0px 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '600px', width: '90%' }}>
             
             <h2 style={{ fontFamily: '"Inter", sans-serif', color: '#1e293b', marginTop: 0, marginBottom: '20px' }}>
@@ -425,7 +425,7 @@ export default function VideoMeetComponent() {
             </div>
 
             {/* INPUT & CONNECT BUTTON */}
-            <div style={{ display: 'flex', gap: '15px', width: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
               <TextField 
                 fullWidth
                 id="outlined-basic" 
@@ -438,7 +438,7 @@ export default function VideoMeetComponent() {
                 variant='contained' 
                 onClick={connect}
                 disabled={!username} 
-                style={{ padding: '0 30px', fontWeight: 'bold', borderRadius: '8px' }}
+                style={{ padding: '12px 30px', fontWeight: 'bold', borderRadius: '8px' }}
               >
                 Connect
               </Button>
@@ -447,8 +447,8 @@ export default function VideoMeetComponent() {
           </div>
         </div> 
         : 
-        /* --- UPGRADED MEETING ROOM WITH DYNAMIC GRID & CHAT --- */
-        <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#111827' }}>
+        /* --- UPGRADED RESPONSIVE MEETING ROOM --- */
+        <Box sx={{ display: 'flex', height: '100vh', backgroundColor: '#111827', position: 'relative' }}>
           
           {/* LEFT SIDE: VIDEO GRID & CONTROLS */}
           <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
@@ -458,10 +458,11 @@ export default function VideoMeetComponent() {
               sx={{ 
                 flexGrow: 1, 
                 display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-                gap: '20px', 
-                padding: '20px', 
-                paddingBottom: '100px', 
+                // RESPONSIVE FIX: Changed 300px to 250px so it fits mobile screens without overflowing
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                gap: '15px', 
+                padding: { xs: '10px', md: '20px' }, 
+                paddingBottom: { xs: '120px', md: '100px' }, // Extra room for mobile controls
                 overflowY: 'auto',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -488,7 +489,7 @@ export default function VideoMeetComponent() {
               ))}
             </Box>
 
-            {/* FLOATING CONTROL BAR */}
+            {/* FLOATING CONTROL BAR (Now Responsive) */}
             <Box 
               sx={{ 
                 position: 'absolute', 
@@ -496,12 +497,16 @@ export default function VideoMeetComponent() {
                 left: '50%', 
                 transform: 'translateX(-50%)', 
                 display: 'flex', 
-                gap: 2, 
+                gap: { xs: 1, sm: 2 }, 
                 backgroundColor: 'rgba(31, 41, 55, 0.9)', 
-                padding: '10px 20px', 
+                padding: { xs: '8px 15px', sm: '10px 20px' }, 
                 borderRadius: '50px', 
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                backdropFilter: 'blur(10px)'
+                backdropFilter: 'blur(10px)',
+                width: { xs: '90%', sm: 'auto' }, // Prevents overflowing on tiny screens
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                zIndex: 10
               }}
             >
               <IconButton onClick={handleVideo} sx={{ color: video ? 'white' : '#ef4444', backgroundColor: video ? 'transparent' : 'rgba(239, 68, 68, 0.2)' }}>
@@ -511,7 +516,7 @@ export default function VideoMeetComponent() {
                 {audio ? <MicIcon /> : <MicOffIcon />}
               </IconButton> 
               {screenAvailable && (
-                <IconButton onClick={handleScreen} sx={{ color: screen ? '#3b82f6' : 'white' }}>
+                <IconButton onClick={handleScreen} sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: screen ? '#3b82f6' : 'white' }}>
                   {screen ? <ScreenShareIcon /> : <StopScreenShareIcon />}
                 </IconButton>
               )}
@@ -520,32 +525,41 @@ export default function VideoMeetComponent() {
                   <ChatIcon />
                 </IconButton>
               </Badge>
-              <IconButton onClick={handleEndCall} sx={{ color: 'white', backgroundColor: '#ef4444', '&:hover': { backgroundColor: '#dc2626' }, ml: 2 }}>
+              <IconButton onClick={handleEndCall} sx={{ color: 'white', backgroundColor: '#ef4444', '&:hover': { backgroundColor: '#dc2626' }, ml: { xs: 0, sm: 2 } }}>
                 <CallEndIcon />
               </IconButton> 
             </Box>
           </Box>
 
-          {/* RIGHT SIDE: CHAT SIDEBAR */}
+          {/* RIGHT SIDE: CHAT SIDEBAR (Now an Overlay on Mobile) */}
           {showModel && (
             <Paper 
-              elevation={4} 
+              elevation={24} 
               sx={{ 
-                width: '350px', 
+                // RESPONSIVE FIX: Full width absolute overlay on mobile, standard sidebar on PC
+                width: { xs: '100%', md: '350px' }, 
+                position: { xs: 'absolute', md: 'relative' },
+                right: 0,
+                top: 0,
                 display: 'flex', 
                 flexDirection: 'column', 
                 height: '100vh', 
                 backgroundColor: '#ffffff',
                 borderLeft: '1px solid #e5e7eb',
-                zIndex: 10 
+                zIndex: 999 
               }}
             >
               {/* Chat Header */}
               <Box sx={{ p: 2, borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#1f2937' }}>Meeting Chat</Typography>
+                
+                {/* Close Button for Mobile Users */}
+                <IconButton onClick={() => setShowModel(false)} sx={{ display: { xs: 'block', md: 'none' } }}>
+                  <CloseIcon />
+                </IconButton>
               </Box>
 
-              {/* Chat Messages (SCROLLABLE AREA) */}
+              {/* Chat Messages */}
               <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {messages.length !== 0 ? messages.map((item, index) => {
                   const isMe = item.sender === username; 
