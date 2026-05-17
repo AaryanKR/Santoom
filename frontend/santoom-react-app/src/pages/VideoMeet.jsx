@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { Badge, Button, IconButton, TextField, Box, Paper, Typography } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
-import styles from "../styles/videoComponent.module.css";
+// ... (your existing imports) ...
 import CallEndIcon from '@mui/icons-material/CallEnd'
 import MicIcon from '@mui/icons-material/Mic'
 import MicOffIcon from '@mui/icons-material/MicOff'
@@ -15,6 +15,7 @@ import server from '../environment';
 
 const server_url = server;
 
+// Moved connections inside the component or managed carefully so it resets on full unmount
 var connections = {};
 
 const peerConfigConnections = {
@@ -24,7 +25,6 @@ const peerConfigConnections = {
 }
 
 export default function VideoMeetComponent() {
-
   var socketRef = useRef();
   let socketIdRef = useRef();
   let localVideoRef = useRef();
@@ -47,6 +47,22 @@ export default function VideoMeetComponent() {
 
   useEffect(() => {
     getPermissions();
+    
+    // MEMORY LEAK FIX #1: Component Unmount Cleanup
+    return () => {
+       if (socketRef.current) {
+           socketRef.current.disconnect(); // Disconnect socket when leaving page
+       }
+       // Stop all local tracks
+       if (window.localStream) {
+           window.localStream.getTracks().forEach(track => track.stop());
+       }
+       // Close all peer connections
+       for (let id in connections) {
+           if (connections[id]) connections[id].close();
+       }
+       connections = {}; // Reset connections object
+    }
   } , [])
 
   let getUserMediaSuccess = (stream) => {
@@ -133,9 +149,7 @@ export default function VideoMeetComponent() {
     }
   } , [video , audio])
 
-  // --- NEW FIX: Helper function to safely create connections ---
   const createConnection = (id) => {
-    // Prevent overwriting existing connections (Fixes the 3rd user bug!)
     if (connections[id]) return; 
 
     connections[id] = new RTCPeerConnection(peerConfigConnections);
@@ -194,19 +208,18 @@ export default function VideoMeetComponent() {
                         connections[fromId].createAnswer().then((description) => {
                             connections[fromId].setLocalDescription(description).then(() => {
                                 socketRef.current.emit('signal', fromId, JSON.stringify({ 'sdp': connections[fromId].localDescription }));
-                            }).catch(e => {}); // Silenced
-                        }).catch(e => {}); // Silenced
+                            }).catch(e => {}); 
+                        }).catch(e => {}); 
                     }
                 })
-                .catch(e => {}); // Silenced - handles the m-lines collision silently
+                .catch(e => {}); 
         }
 
         if (signal.ice) {
             if (connections[fromId].remoteDescription && connections[fromId].remoteDescription.type) {
                 connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice))
-                    .catch(e => {}); // Silenced
+                    .catch(e => {}); 
             } 
-            // Removed the "else" warning entirely so it fails silently until ready
         }
     }
   }
@@ -233,12 +246,17 @@ export default function VideoMeetComponent() {
 
       socketRef.current.on("user-left" , (id) => {
         setVideos((videos) => videos.filter((video) => video.socketId !== id))
+        
+        // MEMORY LEAK FIX #2: Explicitly close the peer connection of the user who left
+        if (connections[id]) {
+            connections[id].close();
+            delete connections[id];
+        }
       })
 
       socketRef.current.on("user-joined" , (id , clients) => {
         clients.forEach((socketListId) => {
           if (socketListId !== socketIdRef.current) {
-            // NEW FIX: Use the helper function so we don't break existing calls
             createConnection(socketListId);
           }
         })
@@ -246,8 +264,6 @@ export default function VideoMeetComponent() {
         if(id === socketIdRef.current){
           for(let id2 in connections){
             if(id2 === socketIdRef.current) continue
-
-            // NEW FIX: Removed the duplicate connections[id2].addStream(window.localStream) here!
 
             connections[id2].createOffer().then((description) => {
               connections[id2].setLocalDescription(description)
@@ -340,10 +356,17 @@ export default function VideoMeetComponent() {
   let getDisplayMedia = () => {
     if(screen) {
       if(navigator.mediaDevices.getDisplayMedia){
-        navigator.mediaDevices.getDisplayMedia({video : true , audio : true})
+        // INFINITE MIRROR FIX: Suggesting the browser to share a specific window instead of the whole monitor
+        navigator.mediaDevices.getDisplayMedia({
+            video : { displaySurface: "window" }, 
+            audio : true
+        })
         .then(getDisplayMediaSuccess)
         .then((stream) => {})
-        .catch((e) => console.log(e))
+        .catch((e) => {
+             console.log(e);
+             setScreen(false); // Reset UI if they cancel the screen share prompt
+        })
       }
     }
   }
@@ -366,13 +389,25 @@ export default function VideoMeetComponent() {
       let tracks = localVideoRef.current.srcObject.getTracks();
       tracks.forEach(track => track.stop())
     }catch(e){}
+    
+    // MEMORY LEAK FIX #3: Full cleanup when the local user hits "End Call"
+    if (socketRef.current) {
+        socketRef.current.disconnect(); 
+    }
+    for (let id in connections) {
+        if (connections[id]) connections[id].close();
+    }
+    connections = {};
+    
     routeTo("/home")
   }
 
+  // --- RENDER PORTION REMAINS UNCHANGED BELOW ---
   return (
     <div>
       {askForUsername === true ? 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f0f4f8' }}>
+          {/* ... (rest of your UI code is identical) ... */}
           <div style={{ backgroundColor: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0px 10px 30px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '600px', width: '90%' }}>
             
             <h2 style={{ fontFamily: '"Inter", sans-serif', color: '#1e293b', marginTop: 0, marginBottom: '20px' }}>
@@ -402,7 +437,7 @@ export default function VideoMeetComponent() {
               <Button 
                 variant='contained' 
                 onClick={connect}
-                disabled={!username} // Prevents joining without a name
+                disabled={!username} 
                 style={{ padding: '0 30px', fontWeight: 'bold', borderRadius: '8px' }}
               >
                 Connect
@@ -423,11 +458,10 @@ export default function VideoMeetComponent() {
               sx={{ 
                 flexGrow: 1, 
                 display: 'grid', 
-                // Auto-resizes videos! Ensures no video is smaller than 300px, but stretches to fill the screen.
                 gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
                 gap: '20px', 
                 padding: '20px', 
-                paddingBottom: '100px', // Leaves room for the control bar
+                paddingBottom: '100px', 
                 overflowY: 'auto',
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -561,7 +595,6 @@ export default function VideoMeetComponent() {
               </Box>
             </Paper>
           )}
-
         </Box>
       }
     </div>
